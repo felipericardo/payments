@@ -3,9 +3,10 @@
 ### Steps to run
 
 ```sh
+$ cp .env.example .env
 $ docker-compose up -d
-$ docker exec -it php sh
-$ php artisan migrate --seed
+$ docker exec -it php sh -c "composer install"
+$ docker exec -it php sh -c "php artisan migrate --seed"
 ```
 
 ### Documentation
