@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  db:
+    container_name: mysql
+    image: mysql:8.3
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payments
+
+  nginx:
+    container_name: nginx
+    build: docker/nginx
+    command: nginx -g "daemon off;"
+    links:
+      - php
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+
+  php:
+    container_name: php
+    build: docker/php
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    command: php-fpm
+    links:
+      - db:db
+    ports:
+      - "9000:9000"
+    depends_on:
+      - db
+
+  worker:
+    container_name: worker
+    build: docker/php
+    restart: always
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    command: php artisan queue:work --tries=3
+    links:
+      - db:db
+      - php:php
+    depends_on:
+      - db
+      - php
